@@ -1,0 +1,81 @@
+Table "peran" {
+  "id" SERIAL [pk, increment]
+  "nama_peran" VARCHAR(50) [unique, not null]
+  "created_at" TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+}
+
+Table "pengguna" {
+  "id" SERIAL [pk, increment]
+  "peran_id" INT [not null]
+  "username" VARCHAR(100) [not null]
+  "email" VARCHAR(100) [unique, not null]
+  "password" VARCHAR(255) [not null]
+  "created_at" TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+}
+
+Table "pasien" {
+  "id" SERIAL [pk, increment]
+  "pengguna_id" INT [unique, not null]
+  "nik" VARCHAR(16) [unique, not null]
+  "nama_lengkap" VARCHAR(150) [not null]
+  "jenis_kelamin" VARCHAR(10) [not null]
+  "tanggal_lahir" DATE [not null]
+  "alamat" TEXT [not null]
+  "nomor_telepon" VARCHAR(15)
+  "created_at" TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+}
+
+Table "obat" {
+  "id" SERIAL [pk, increment]
+  "nama_obat" VARCHAR(100) [not null]
+  "kategori" VARCHAR(50) [not null]
+  "stok" INT [not null, default: 0]
+  "satuan" VARCHAR(20) [not null]
+  "created_at" TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+}
+
+Table "jadwal" {
+  "id" SERIAL [pk, increment]
+  "dibuat_oleh" INT [not null]
+  "judul" VARCHAR(150) [not null]
+  "tanggal_kegiatan" DATE [not null]
+  "lokasi" VARCHAR(200) [not null]
+  "deskripsi" TEXT
+  "created_at" TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+}
+
+Table "pemeriksaan" {
+  "id" SERIAL [pk, increment]
+  "pasien_id" INT [not null]
+  "jadwal_id" INT [not null]
+  "berat_badan" NUMERIC(5,2) [not null]
+  "tinggi_badan" NUMERIC(5,2) [not null]
+  "catatan" TEXT
+  "tanggal_pemeriksaan" TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+}
+
+Table "peserta_jadwal" {
+  "id" SERIAL [pk, increment]
+  "jadwal_id" INT [not null]
+  "pasien_id" INT [not null]
+  "status_kehadiran" VARCHAR(20) [default: 'Hadir']
+  "created_at" TIMESTAMP [default: `CURRENT_TIMESTAMP`]
+
+  Indexes {
+    (jadwal_id, pasien_id) [unique, name: "unique_jadwal_pasien"]
+  }
+}
+
+Ref "fk_pengguna_peran":"peran"."id" < "pengguna"."peran_id" [delete: cascade]
+
+Ref "fk_pasien_pengguna":"pengguna"."id" - "pasien"."pengguna_id" [delete: cascade]
+
+Ref "fk_jadwal_pembuat":"pengguna"."id" < "jadwal"."dibuat_oleh" [delete: cascade]
+
+Ref "fk_pemeriksaan_pasien":"pasien"."id" < "pemeriksaan"."pasien_id" [delete: cascade]
+
+Ref "fk_pemeriksaan_jadwal":"jadwal"."id" < "pemeriksaan"."jadwal_id" [delete: cascade]
+
+Ref "fk_peserta_jadwal":"jadwal"."id" < "peserta_jadwal"."jadwal_id" [delete: cascade]
+
+Ref "fk_peserta_pasien":"pasien"."id" < "peserta_jadwal"."pasien_id" [delete: cascade]
